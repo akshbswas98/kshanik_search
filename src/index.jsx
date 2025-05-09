@@ -5,6 +5,8 @@ import App from './App.jsx';
 import { ResultContextProvider } from './contexts/ResultsContextProvider.jsx';
 import './global.css';
 
+/*    /index.html   200 */
+
 const root = createRoot(document.getElementById('root'));
 root.render(
     <ResultContextProvider>
