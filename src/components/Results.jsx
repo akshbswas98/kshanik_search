@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useResultContext } from '../contexts/ResultsContextProvider';
+import { useResultContext } from '../contexts/ResultsContextProvider.jsx';
 
 export const Results = () => {
   const { results, getResults, searchTerm } = useResultContext();
