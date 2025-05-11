@@ -18,7 +18,7 @@ export const ResultContextProvider = ({ children }) => {
                 num: '10'
             });
 
-            const response = await fetch(`/api/search.json?${params.toString()}`, {
+            const response = await fetch(`https://serpapi.com/search.json?${params.toString()}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
