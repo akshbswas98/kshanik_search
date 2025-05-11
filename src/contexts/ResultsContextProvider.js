@@ -31,7 +31,13 @@ export const ResultContextProvider = ({ children }) => {
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (error) {
+                throw new Error('Invalid JSON response');
+            }
+
             console.log('Response:', data);
 
             if (data.error) {
