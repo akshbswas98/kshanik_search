@@ -5,7 +5,7 @@ export const About = () => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-200 p-6">
             <h1 className="text-4xl font-bold mb-6">In Loving Memory</h1>
             <img 
-                src="/public/kshanik_kumar_biswas.jpg" 
+                src="/kshanik_kumar_biswas.jpg" 
                 alt="Kshanik Kumar Biswas" 
                 className="w-64 h-64 rounded-full shadow-lg mb-6"
             />
