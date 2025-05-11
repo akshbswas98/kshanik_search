@@ -1,89 +1,34 @@
-# Getting Started with Create React App
+# 🌟 Kshanik Search
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A heartfelt tribute to **Kshanik Kumar Biswas (1943–2021)**, this search engine blends modern technology with a meaningful legacy. Explore the web with purpose and discover the story behind this project.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 📖 About
 
-### `yarn start`
+Kshanik Search is more than a search engine—it's a dedication to the enduring memory of Kshanik Kumar Biswas. With a sleek interface and thoughtful features, this project combines functionality with a mission to honor a remarkable life.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+---
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## ✨ Features
 
-### `yarn test`
+- **Powerful Search**: Effortlessly explore the web with our custom-built search engine.
+- **Dark Mode Toggle**: Switch between light and dark themes for a comfortable experience.
+- **About Page**: Dive into the heartfelt inspiration behind Kshanik Search.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `yarn build`
+## 🚀 Upcoming Features (Roadmap)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- [ ] **GPT-Powered Search**: Supercharge results with AI-driven GPT responses.
+- [ ] **AI Voice Assistant**: Enable hands-free searches with an intelligent voice interface.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🛠️ How to Run
 
-### `yarn eject`
+Get started with Kshanik Search in just a few steps:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-# Kshanik Search
-
-## About
-This project is a search engine dedicated to the loving memory of Kshanik Kumar Biswas (1943-2021). It features a search functionality and an About page to honor his legacy.
-
-## Features
-- **Search Functionality**: Search the web using a custom search engine.
-- **Dark Mode**: Toggle between light and dark themes.
-- **About Page**: Learn about the inspiration behind this project.
-
-## Upcoming Features (Roadmap)
-- [ ] **GPT Search Engine Integration**: Enhance search results with AI-powered GPT responses.
-- [ ] **AI Voice Assistant**: Add a voice assistant for hands-free search and interaction.
-
-## How to Run
 1. Clone the repository.
 2. Install dependencies: `npm install`
 3. Start the development server: `npm run dev`
