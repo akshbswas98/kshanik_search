@@ -68,3 +68,26 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `yarn build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# Kshanik Search
+
+## About
+This project is a search engine dedicated to the loving memory of Kshanik Kumar Biswas (1943-2021). It features a search functionality and an About page to honor his legacy.
+
+## Features
+- **Search Functionality**: Search the web using a custom search engine.
+- **Dark Mode**: Toggle between light and dark themes.
+- **About Page**: Learn about the inspiration behind this project.
+
+## Upcoming Features (Roadmap)
+- [ ] **GPT Search Engine Integration**: Enhance search results with AI-powered GPT responses.
+- [ ] **AI Voice Assistant**: Add a voice assistant for hands-free search and interaction.
+
+## How to Run
+1. Clone the repository.
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+4. Build for production: `npm run build`
+
+## Deployment
+This project is deployed on Netlify. Visit [Kshanik Search](https://kshaniksearch.netlify.app) to explore.

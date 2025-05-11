@@ -17,6 +17,10 @@ export const Navbar = ({ darkTheme, setDarkTheme }) => {
                     {darkTheme ? '💡' : '🌙'}
                 </button>
             </div>
+            <div className="flex space-x-4 mt-4">
+                <Link to="/search" className="text-lg text-gray-700 dark:text-gray-300 hover:underline">Search</Link>
+                <Link to="/about" className="text-lg text-gray-700 dark:text-gray-300 hover:underline">About</Link>
+            </div>
             <Search />
         </div>
     );
