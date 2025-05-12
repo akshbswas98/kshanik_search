@@ -14,7 +14,7 @@ export const Search = () => {
     }, [debouncedValue, setSearchTerm]);
 
     return (
-        <div className="relative sm:ml-48 md:ml-72 sm:-mt-10 mt-3">
+        <div className="relative flex justify-center items-center mt-3">
             <input
                 value={text}
                 type="text"
