@@ -32,14 +32,14 @@ export const ResultContextProvider = ({ children }) => {
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
             }
 
-            let data;
-            try {
-                data = await response.json();
-            } catch (error) {
-                const fullResponseBody = await response.text();
-                console.error('Invalid JSON response:', fullResponseBody);
-                throw new Error('Invalid JSON response');
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const errorData = await response.text();
+                console.error('Non-JSON response:', errorData);
+                throw new Error('Received non-JSON response');
             }
+
+            const data = await response.json();
 
             console.log('Response:', data);
 
