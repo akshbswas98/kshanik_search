@@ -28,6 +28,7 @@ export const ResultContextProvider = ({ children }) => {
 
             if (!response.ok) {
                 const errorData = await response.text();
+                console.error('Error response:', errorData);
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
             }
 
@@ -35,6 +36,8 @@ export const ResultContextProvider = ({ children }) => {
             try {
                 data = await response.json();
             } catch (error) {
+                const fullResponseBody = await response.text();
+                console.error('Invalid JSON response:', fullResponseBody);
                 throw new Error('Invalid JSON response');
             }
 
