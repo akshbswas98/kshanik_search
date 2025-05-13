@@ -1,36 +1,45 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
-const mockResults = [
-    {
-        title: 'Example Result 1',
-        link: 'https://example.com/1',
-        snippet: 'This is a snippet for example result 1.'
-    },
-    {
-        title: 'Example Result 2',
-        link: 'https://example.com/2',
-        snippet: 'This is a snippet for example result 2.'
-    },
-    {
-        title: 'Example Result 3',
-        link: 'https://example.com/3',
-        snippet: 'This is a snippet for example result 3.'
-    }
-];
 
 export const Results = () => {
     const location = useLocation();
-    const searchMadeRef = useRef(false);
+    const [results, setResults] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Placeholder for search logic
-        console.log('Search triggered for location:', location);
+        const fetchResults = async () => {
+            try {
+                const params = new URLSearchParams({
+                    key: import.meta.env.VITE_GOOGLE_API_KEY, // Google API Key
+                    cx: import.meta.env.VITE_GOOGLE_CX,       // Custom Search Engine ID
+                    q: location.search?.replace('?', '') || 'example'
+                });
+
+                const response = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+                }
+
+                const data = await response.json();
+                setResults(data.items || []);
+            } catch (err) {
+                console.error('Error fetching data from Google Programmable Search API:', err);
+                setError(err.message);
+            }
+        };
+
+        fetchResults();
     }, [location]);
+
+    if (error) {
+        return <div className="p-4 text-red-500">Error: {error}</div>;
+    }
 
     return (
         <div className="sm:px-56 flex flex-wrap justify-between space-y-6 p-4">
-            {mockResults.map(({ title, link, snippet }, index) => (
+            {results.map(({ title, link, snippet }, index) => (
                 <div key={index} className="md:w-2/5 w-full">
                     <a 
                         href={link} 
