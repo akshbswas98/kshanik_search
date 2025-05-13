@@ -25,10 +25,17 @@ export const Results = () => {
 
                 const data = await response.json();
                 console.log('API Response:', data); // Debugging API response
-                setResults(data.items || []);
+
+                if (data.items) {
+                    console.log('Search Results:', data.items); // Log the search results
+                    setResults(data.items);
+                } else {
+                    console.warn('No items found in API response:', data);
+                    setResults([]); // Fallback to an empty array
+                }
             } catch (err) {
                 console.error('Error fetching data from Google Programmable Search API:', err);
-                setError(err.message);
+                setError('Failed to fetch search results. Please try again later.');
             }
         };
 
