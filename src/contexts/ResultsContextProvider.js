@@ -9,16 +9,12 @@ export const ResultContextProvider = ({ children }) => {
     const getResults = async (query) => {
         try {
             const params = new URLSearchParams({
-                q: query,
-                api_key: import.meta.env.VITE_SERPAPI_KEY,
-                engine: 'google',
-                google_domain: 'google.com',
-                gl: 'us',
-                hl: 'en',
-                num: '10'
+                key: import.meta.env.VITE_GOOGLE_API_KEY, // Google API Key
+                cx: import.meta.env.VITE_GOOGLE_CX,       // Custom Search Engine ID
+                q: query
             });
 
-            const response = await fetch(`https://serpapi.com/search.json?${params.toString()}`, {
+            const response = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -32,28 +28,21 @@ export const ResultContextProvider = ({ children }) => {
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
             }
 
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const errorData = await response.text();
-                console.error('Non-JSON response:', errorData);
-                throw new Error('Received non-JSON response');
-            }
-
             const data = await response.json();
 
             console.log('Response:', data);
 
             if (data.error) {
-                throw new Error(data.error);
+                throw new Error(data.error.message);
             }
 
-            setResults(data.organic_results?.map((item) => ({
+            setResults(data.items?.map((item) => ({
                 title: item.title,
                 link: item.link,
                 snippet: item.snippet,
             })) || []);
         } catch (error) {
-            console.error('Error fetching data from SerpApi:', error);
+            console.error('Error fetching data from Google Programmable Search:', error);
             setResults([]);
         }
     };
