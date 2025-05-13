@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
-import { useResultContext } from '../contexts/ResultsContextProvider.jsx';
 import { Links } from './Links';
 
 export const Search = () => {
-    const { setSearchTerm } = useResultContext();
     const [text, setText] = useState('');
     const [debouncedValue] = useDebounce(text, 300);
 
     useEffect(() => {
-        if (debouncedValue) setSearchTerm(debouncedValue);
-    }, [debouncedValue, setSearchTerm]);
+        // Placeholder for search term handling logic
+        console.log('Search term:', debouncedValue);
+    }, [debouncedValue]);
 
     return (
         <div className="relative flex flex-col items-center mt-6">
