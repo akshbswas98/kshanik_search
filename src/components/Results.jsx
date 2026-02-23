@@ -5,58 +5,87 @@ export const Results = () => {
     const location = useLocation();
     const [results, setResults] = useState([]);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [timeTaken, setTimeTaken] = useState('');
+    const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
         const fetchResults = async () => {
-            try {
-                const searchTerm = new URLSearchParams(location.search).get('q') || 'default search';
-                const params = new URLSearchParams({
-                    key: import.meta.env.VITE_GOOGLE_API_KEY, // Google API Key
-                    cx: import.meta.env.VITE_GOOGLE_CX,       // Custom Search Engine ID
-                    q: searchTerm
-                });
+            const searchTerm = new URLSearchParams(location.search).get('q');
+            if (!searchTerm) {
+                setResults([]);
+                return;
+            }
 
-                const response = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
+            setLoading(true);
+            setError(null);
+
+            try {
+                const params = new URLSearchParams({ q: searchTerm });
+                const response = await fetch(`/api/search?${params.toString()}`);
 
                 if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('API Response:', data); // Debugging API response
 
-                if (data.items) {
-                    console.log('Search Results:', data.items); // Log the search results
-                    setResults(data.items);
+                if (data.results && data.results.length > 0) {
+                    setResults(data.results);
+                    setTimeTaken(data.time_taken || '');
+                    setTotalCount(data.total_count || 0);
                 } else {
-                    console.warn('No items found in API response:', data);
-                    setResults([]); // Fallback to an empty array
+                    setResults([]);
                 }
             } catch (err) {
-                console.error('Error fetching data from Google Programmable Search API:', err);
+                console.error('Error fetching search results:', err);
                 setError('Failed to fetch search results. Please try again later.');
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchResults();
     }, [location]);
 
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                <span className="ml-3 text-gray-500">Searching...</span>
+            </div>
+        );
+    }
+
     if (error) {
         return <div className="p-4 text-red-500">Error: {error}</div>;
     }
 
     return (
-        <div className="sm:px-56 flex flex-wrap justify-between space-y-6 p-4">
+        <div className="sm:px-56 flex flex-col space-y-6 p-4">
+            {totalCount > 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Found {totalCount} results in {timeTaken}
+                </p>
+            )}
             {results.length > 0 ? (
-                results.map(({ title, link, snippet }, index) => (
-                    <div key={index} className="md:w-2/5 w-full">
-                        <a 
-                            href={link} 
-                            target="_blank" 
+                results.map(({ title, url, snippet, source, score }, index) => (
+                    <div key={index} className="w-full">
+                        <a
+                            href={url}
+                            target="_blank"
                             rel="noreferrer"
                             className="block p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-300"
                         >
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 font-medium uppercase">
+                                    {source}
+                                </span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                                    {url}
+                                </span>
+                            </div>
                             <p className="text-lg dark:text-blue-300 text-blue-700 font-medium hover:underline">
                                 {title}
                             </p>
@@ -72,4 +101,3 @@ export const Results = () => {
         </div>
     );
 };
-

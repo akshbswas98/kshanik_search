@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://serpapi.com',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
@@ -18,10 +18,5 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
-  },
-  define: {
-    'process.env': {
-      REACT_APP_SERPAPI_KEY: JSON.stringify(process.env.REACT_APP_SERPAPI_KEY)
-    }
   }
-}); 
+});
