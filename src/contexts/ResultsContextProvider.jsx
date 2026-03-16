@@ -11,7 +11,9 @@ export const ResultContextProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams({ q: query });
-            const response = await fetch(`/api/search?${params.toString()}`);
+            const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
+            const endpoint = API_BASE ? `${API_BASE}/search?${params.toString()}` : `/api/search?${params.toString()}`;
+            const response = await fetch(endpoint);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

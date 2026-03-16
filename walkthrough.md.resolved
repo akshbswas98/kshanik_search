@@ -1,0 +1,110 @@
+# Project Structure & Deployment Walkthrough
+
+This document provides a visual overview of the Kshanik Search project architecture and the step-by-step process for deploying the Go backend to Oracle Cloud Infrastructure (OCI).
+
+## 1. Project Structure
+
+The following diagram illustrates the relationship between the React frontend, the Go backend, and the external search providers.
+
+```mermaid
+graph TD
+    subgraph Frontend ["React Frontend (Vite)"]
+        UI["UI Components (Results.jsx)"]
+        Ctx["Context (ResultsContextProvider.jsx)"]
+    end
+
+    subgraph Backend ["Go Backend (Meta-Search)"]
+        Srv["HTTP Server (:8080)"]
+        Hnd["API Handlers (/search, /health)"]
+        MSS["MetaSearchService (Concurrent Fan-out)"]
+        
+        subgraph Providers ["Search Providers"]
+            DDG["DuckDuckGo Provider"]
+            Wkp["Wikipedia Provider"]
+            Ghb["GitHub Provider"]
+        end
+        
+        subgraph Utils ["Internal Utils"]
+            Dedup["Deduplication"]
+            Rank["Ranking (Keyword Weighted)"]
+        end
+    end
+
+    subgraph External ["External APIs"]
+        DDG_API["DuckDuckGo API"]
+        Wkp_API["Wikipedia API"]
+        Ghb_API["GitHub API"]
+    end
+
+    %% Flow
+    UI --> Ctx
+    Ctx -- "GET /api/search" --> Srv
+    Srv --> Hnd
+    Hnd --> MSS
+    MSS --> DDG
+    MSS --> Wkp
+    MSS --> Ghb
+    
+    DDG -.-> DDG_API
+    Wkp -.-> Wkp_API
+    Ghb -.-> Ghb_API
+    
+    DDG -- "Results" --> MSS
+    Wkp -- "Results" --> MSS
+    Ghb -- "Results" --> MSS
+    
+    MSS --> Dedup
+    Dedup --> Rank
+    Rank -- "Ranked Results" --> Hnd
+    Hnd -- "JSON" --> UI
+
+    %% Styling
+    style Frontend fill:#f9f,stroke:#333,stroke-width:2px
+    style Backend fill:#bbf,stroke:#333,stroke-width:2px
+    style External fill:#dfd,stroke:#333,stroke-width:2px
+    style MSS fill:#ff9,stroke:#333,stroke-width:2px
+```
+
+## 2. Go Server & OCI Deployment Flow
+
+This diagram outlines the process of setting up an Oracle Cloud instance, configuring the environment, and deploying the Go server with a secure reverse proxy.
+
+```mermaid
+flowchart TD
+    subgraph OCI_Setup ["Phase 1 & 2: OCI & Networking"]
+        A["Create OCI Free Tier ARM Instance"] --> B["Download SSH Keys"]
+        B --> C["Configure VCN Security List (Ports 80, 443)"]
+        C --> D["SSH into VM & Update iptables"]
+    end
+
+    subgraph Env_Setup ["Phase 3: Environment Configuration"]
+        D --> E["Install Go (linux/arm64)"]
+        E --> F["Install Caddy (Reverse Proxy)"]
+    end
+
+    subgraph Deployment ["Phase 4 & 5: Build & Run"]
+        F --> G["Clone Repository & Create .env"]
+        G --> H["Build Go Binary (go build)"]
+        H --> I["Create & Enable Systemd Service"]
+        I --> J["Configure Caddyfile (SSL + Proxy)"]
+    end
+
+    subgraph Frontend_Final ["Phase 6: Frontend Integration"]
+        J --> K["Map Domain DNS to Public IP"]
+        K --> L["Update Netlify Environment Variables"]
+        L --> M["Deploy Frontend (Netlify)"]
+    end
+
+    %% Coloring
+    style OCI_Setup fill:#e1f5fe,stroke:#01579b
+    style Env_Setup fill:#f3e5f5,stroke:#4a148c
+    style Deployment fill:#fff3e0,stroke:#e65100
+    style Frontend_Final fill:#e8f5e9,stroke:#1b5e20
+```
+
+---
+
+### Key Highlights
+- **Concurrency**: The Go backend utilizes goroutines for parallel API fetches, making it significantly faster and more resource-efficient than traditional blocking architectures.
+- **Oracle Cloud**: Leverages the Always Free ARM tier for high-performance hosting at zero cost.
+- **Caddy**: Simplifies HTTPS with automatic SSL certificate management, ensuring secure communication between Netlify and the OCI instance.
