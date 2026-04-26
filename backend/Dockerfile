@@ -15,7 +15,7 @@ COPY . .
 
 # Build the binary
 # -ldflags="-w -s" reduces binary size
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-w -s" -o kshanik-search ./cmd/server/
+RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o kshanik-search ./cmd/server/
 
 # Stage 2: Final image
 FROM alpine:latest
