@@ -4,6 +4,7 @@ import { Footer } from './components/Footer';
 import { Routes } from './components/Routes';
 
 const App = () => {
+    console.log('App rendering...');
     const [darkTheme, setDarkTheme] = useState(false);
 
     return (

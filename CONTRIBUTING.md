@@ -1,6 +1,6 @@
-# Clone and Contribute to React Google Search Repository for Hacktoberfest 2023
+# Clone and Contribute to Kshanik Search Repository
 
-Welcome to the React Google Search repository! This guide will walk you through the process of cloning the repository and contributing to it for Hacktoberfest 2023.
+Welcome to the Kshanik Search repository! This guide will walk you through the process of cloning the repository and contributing to it.
 
 ## Prerequisites
 Before you begin, make sure you have the following installed on your system:
@@ -8,7 +8,7 @@ Before you begin, make sure you have the following installed on your system:
 - Node.js: [Download and install Node.js](https://nodejs.org)
 
 ## Step 1: Fork the Repository
-1. Visit the [React Google Search repository](https://github.com/your-username/react-google-search) on GitHub.
+1. Visit the [Kshanik Search repository](https://github.com/kshanik/search-engine) on GitHub.
 2. Click on the "Fork" button in the top right corner of the repository page.
 3. This will create a forked copy of the repository under your GitHub account.
 
@@ -25,10 +25,11 @@ Replace `<repository-url>` with the URL you copied in the previous step.
 ## Step 3: Set Up the Development Environment
 1. Navigate to the cloned repository's directory:
 
-cd react-google-search
+cd kshanik_search
 npm install
+
 ## Step 4: Make Your Contributions
-Now that you have the repository set up on your local machine, you can start making your contributions for Hacktoberfest 2023. Here are a few suggestions:
+Now that you have the repository set up on your local machine, you can start making your contributions. Here are a few suggestions:
 
 Add a new feature to the search functionality.
 Improve the user interface and design.
@@ -52,6 +53,6 @@ You should see a banner with a green "Compare & pull request" button. Click on i
 Provide a descriptive title and detailed description for your pull request.
 Review your changes and ensure everything looks good.
 Click on the "Create pull request" button to submit your contribution.
-Congratulations! You have successfully cloned the React Google Search repository, made your contributions, and submitted a pull request for Hacktoberfest 2023. Thank you for your contribution! ```
+Congratulations! You have successfully cloned the Kshanik Search repository, made your contributions, and submitted a pull request. Thank you for your contribution! ```
 
 Happy hacking!

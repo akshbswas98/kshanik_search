@@ -1,11 +1,14 @@
-import React from 'react'
+import React from 'react';
 
-export const Footer = () => {
-return (
-        <div className="text-center p-6 mt-10 border-t dark:border-gray-700 border-gray-200 bg-gray-50 dark:bg-gray-900">
-            <h1 className="text-lg font-semibold">© Kshanik Search (2021 - Present)</h1>
-            <h3 className="text-sm text-gray-600 dark:text-gray-400 mt-2">Made with ❤ in memory of my grandfather Kshanik Kumar Biswas (1943-2021)</h3>
-        </div>
-    );
-}
-
+export const Footer = () => (
+  <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-auto transition-colors duration-300">
+    <div className="max-w-7xl mx-auto px-4 text-center">
+      <p className="text-slate-800 dark:text-slate-200 font-medium mb-2">
+        © Kshanik Search ({new Date().getFullYear()} - Present)
+      </p>
+      <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center justify-center gap-1.5">
+        Made with <span className="text-red-500">❤️</span> in memory of Kshanik Kumar Biswas (1943-2021)
+      </p>
+    </div>
+  </footer>
+);

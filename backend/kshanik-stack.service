@@ -1,0 +1,21 @@
+[Unit]
+Description=Kshanik Search Engine Stack (Docker Compose)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/ubuntu/kshanik_search/backend
+
+# Start the stack
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+
+# Stop the stack
+ExecStop=/usr/bin/docker compose down
+
+# Optional: Pull latest images if using a registry
+# ExecStartPre=/usr/bin/docker compose pull
+
+[Install]
+WantedBy=multi-user.target

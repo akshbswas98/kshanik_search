@@ -51,53 +51,95 @@ export const Results = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                <span className="ml-3 text-gray-500">Searching...</span>
+            <div className="flex flex-col justify-center items-center py-24">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 dark:border-emerald-400"></div>
+                <span className="mt-4 text-slate-500 dark:text-slate-400 font-medium">Searching archives...</span>
             </div>
         );
     }
 
     if (error) {
-        return <div className="p-4 text-red-500">Error: {error}</div>;
+        return (
+            <div className="max-w-4xl mx-auto p-8 mt-8 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400">
+                <p className="font-bold mb-2">Search Error</p>
+                <p>{error}</p>
+            </div>
+        );
     }
 
+    const searchTerm = new URLSearchParams(location.search).get('q');
+
     return (
-        <div className="sm:px-56 flex flex-col space-y-6 p-4">
-            {totalCount > 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Found {totalCount} results in {timeTaken}
-                </p>
+        <div className="max-w-4xl mx-auto px-4 py-8">
+            {searchTerm && (
+                <div className="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4 flex justify-between items-end">
+                    <div>
+                        <h2 className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">Search Results for</h2>
+                        <p className="text-2xl font-serif font-bold text-slate-900 dark:text-white">"{searchTerm}"</p>
+                    </div>
+                    {totalCount > 0 && (
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium italic">
+                            Found {totalCount} records in {timeTaken}
+                        </p>
+                    )}
+                </div>
             )}
-            {results.length > 0 ? (
-                results.map(({ title, url, snippet, source, score }, index) => (
-                    <div key={index} className="w-full">
-                        <a
-                            href={url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-300"
-                        >
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 font-medium uppercase">
+
+            <div className="space-y-6">
+                {results.length > 0 ? (
+                    results.map(({ title, url, snippet, source, score }, index) => (
+                        <article key={index} className="group relative bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-900/50 transition-all duration-300">
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ${
+                                    source === 'wikipedia' ? 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300' :
+                                    source === 'github' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' :
+                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                                }`}>
                                     {source}
                                 </span>
-                                <span className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                                <span className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[200px] sm:max-w-md">
                                     {url}
                                 </span>
                             </div>
-                            <p className="text-lg dark:text-blue-300 text-blue-700 font-medium hover:underline">
-                                {title}
-                            </p>
-                            <p className="text-sm dark:text-gray-300 text-gray-700 mt-2">
+                            <h3 className="text-xl font-serif font-bold text-emerald-800 dark:text-emerald-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 mb-2 transition-colors">
+                                <a href={url} target="_blank" rel="noreferrer" className="hover:underline">
+                                    {title}
+                                </a>
+                            </h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                                 {snippet}
                             </p>
-                        </a>
+                            <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-700/50">
+                                <a 
+                                    href={url} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    className="text-xs font-bold text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1"
+                                >
+                                    Visit Source <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                </a>
+                                {score && (
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-emerald-500" 
+                                                style={{ width: `${score * 100}%` }}
+                                            ></div>
+                                        </div>
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Relevance</span>
+                                    </div>
+                                )}
+                            </div>
+                        </article>
+                    ))
+                ) : searchTerm ? (
+                    <div className="text-center py-24 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                        <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600 mb-4 italic">find_in_page</span>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">No historical records found for "{searchTerm}".</p>
+                        <p className="text-xs text-slate-400 mt-2 italic">Try refining your search terms or exploring the archives.</p>
                     </div>
-                ))
-            ) : (
-                <p className="text-center text-gray-500">No results found. Try searching for something else.</p>
-            )}
+                ) : null}
+            </div>
         </div>
     );
 };

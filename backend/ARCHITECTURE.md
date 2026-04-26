@@ -1,288 +1,91 @@
-# Kshanik Search Engine — Architecture & Documentation
+# Kshanik Search Engine — Redesigned Hybrid Architecture
 
-## 🏗️ Project Structure
+## 🏗️ Evolution: Meta-Search to Distributed Hybrid Search
 
-```
-kshanik_search/
-├── backend/                          ← Go backend (meta-search engine)
-│   ├── cmd/
-│   │   └── server/
-│   │       └── main.go               ← Entry point: config, DI, server startup
-│   ├── internal/
-│   │   ├── api/
-│   │   │   ├── handler.go            ← HTTP handlers (GET /search, GET /health)
-│   │   │   └── middleware.go          ← Request logging + panic recovery
-│   │   ├── models/
-│   │   │   └── search.go             ← DTOs: SearchResult, SearchRequest, SearchResponse
-│   │   ├── provider/
-│   │   │   ├── provider.go           ← SearchProvider interface
-│   │   │   ├── duckduckgo.go         ← DuckDuckGo Instant Answer API
-│   │   │   ├── wikipedia.go          ← Wikipedia OpenSearch API
-│   │   │   └── github.go             ← GitHub Repository Search API
-│   │   ├── service/
-│   │   │   └── search_service.go     ← MetaSearchService: concurrent fan-out + merge
-│   │   ├── utils/
-│   │   │   └── helpers.go            ← Dedup, ranking, tokenization
-│   │   ├── crawler/
-│   │   │   └── crawler.go            ← 🔮 Stub: future web crawler
-│   │   ├── index/
-│   │   │   └── index.go              ← 🔮 Stub: future inverted index
-│   │   └── ranking/
-│   │       └── ranking.go            ← 🔮 Stub: future BM25/semantic ranking
-│   ├── .env                          ← Local configuration
-│   ├── .env.example                  ← Configuration template
-│   ├── go.mod
-│   └── go.sum
-├── src/                              ← React frontend (existing)
-│   ├── components/
-│   │   ├── Results.jsx               ← Updated to call Go backend
-│   │   └── ...
-│   └── contexts/
-│       └── ResultsContextProvider.jsx ← Updated to call Go backend
-├── vite.config.js                    ← Proxy → localhost:8080
-└── package.json
-```
+The Kshanik Search Engine is evolving from a pure meta-search aggregator to a **Hybrid Search System**. This redesign leverages the high-memory ARM architecture of Oracle Cloud to support local indexing, distributed crawling, and semantic ranking.
 
-## 🔍 Architecture Overview
+### 🧩 System Components
 
-### Current State: Meta Search Engine (Phase 1)
+1.  **Search Core (Go Monolith/Microservices):**
+    *   **Meta-Aggregator:** Concurrent fan-out to external providers (DDG, GitHub, etc.).
+    *   **Local-Search Indexer:** Queries a local high-performance index (Meilisearch or custom Inverted Index).
+    *   **Hybrid Ranker:** Merges results using a weighted multi-factor algorithm (Source Reliability + Recency + Keyword Density).
+2.  **The Crawler Pipeline (Asynchronous):**
+    *   **URL Frontier:** A priority queue (Redis-backed) managing millions of URLs.
+    *   **Distributed Crawler:** High-concurrency workers utilizing Go's `net/http` and `colly`.
+    *   **Storage Layer:** Raw data in S3-compatible Object Storage (OCI Object Storage).
+3.  **Data Processing:**
+    *   **Extractor:** Transforms raw HTML into clean text and metadata.
+    *   **Vector Engine (Future):** Generates embeddings for semantic search.
+
+---
+
+## 🔍 Detailed Architecture Diagram (Hybrid Phase)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        React Frontend                          │
-│                   (Vite dev server :3000)                       │
+│                   (Vite / Netlify / Vercel)                    │
 └──────────────────────┬──────────────────────────────────────────┘
-                       │ GET /api/search?q=...
-                       │ (proxy strips /api prefix)
+                       │ HTTPS (Caddy / Cloudflare)
                        ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                Go HTTP Server (:8080)                           │
+│              Oracle Cloud ARM Instance (Go)                     │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │            Middleware Chain                               │   │
-│  │  Recovery → Logging → Router                             │   │
+│  │                    API Gateway                           │   │
+│  │         (Auth, Rate Limiting, Caching: Redis)            │   │
 │  └──────────────────────┬───────────────────────────────────┘   │
 │                         │                                       │
 │  ┌──────────────────────▼───────────────────────────────────┐   │
-│  │            API Handler                                    │   │
-│  │  GET /search?q=...  → validates query                    │   │
-│  │  GET /health        → health check                       │   │
-│  └──────────────────────┬───────────────────────────────────┘   │
-│                         │                                       │
-│  ┌──────────────────────▼───────────────────────────────────┐   │
-│  │         MetaSearchService                                 │   │
+│  │                Hybrid Search Orchestrator                 │   │
 │  │                                                           │   │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        │   │
-│  │  │ DuckDuckGo  │ │  Wikipedia  │ │   GitHub    │        │   │
-│  │  │  Provider   │ │  Provider   │ │  Provider   │        │   │
-│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘        │   │
-│  │         │               │               │                │   │
-│  │         └───────────────┼───────────────┘                │   │
-│  │                         │                                 │   │
-│  │              ┌──────────▼──────────┐                      │   │
-│  │              │  Concurrent Fan-out │                      │   │
-│  │              │  (goroutines + WG)  │                      │   │
-│  │              └──────────┬──────────┘                      │   │
-│  │                         │                                 │   │
-│  │              ┌──────────▼──────────┐                      │   │
-│  │              │   Deduplication     │                      │   │
-│  │              │   (URL hashing)     │                      │   │
-│  │              └──────────┬──────────┘                      │   │
-│  │                         │                                 │   │
-│  │              ┌──────────▼──────────┐                      │   │
-│  │              │     Ranking         │                      │   │
-│  │              │ provider weight +   │                      │   │
-│  │              │ keyword relevance   │                      │   │
-│  │              └──────────┬──────────┘                      │   │
-│  │                         │                                 │   │
-│  └─────────────────────────┼────────────────────────────────┘   │
-│                            ▼                                     │
-│               JSON Response { results: [...] }                   │
-└──────────────────────────────────────────────────────────────────┘
+│  │  ┌──────────────┐         ┌───────────────┐               │   │
+│  │  │ Meta-Search  │         │  Local Index  │               │   │
+│  │  │ (External)   │         │ (Meilisearch) │               │   │
+│  │  └──────┬───────┘         └───────┬───────┘               │   │
+│  │         │                         │                       │   │
+│  │         └──────────┬──────────────┘                       │   │
+│  │                    ▼                                      │   │
+│  │           Hybrid Ranking Engine                           │   │
+│  │    (BM25 + Cross-Source Deduplication)                    │   │
+│  └────────────────────┬─────────────────────────────────────┘   │
+│                       │                                         │
+│  ┌────────────────────▼─────────────────────────────────────┐   │
+│  │              Background Crawler System                   │   │
+│  │  (Managed by Go Workers + OCI Object Storage)             │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Evolution Path: Meta Search → Classical Search Engine
+## ⚡ Recomputed Performance Metrics (ARM A1 Flex)
+
+By moving to this hybrid architecture on OCI Ampere (ARM64), we achieve:
+
+| Metric | Target | Computation / Reason |
+|--------|--------|----------------------|
+| **Search Latency** | < 300ms | 80% of top queries served from Redis cache / Local Index. |
+| **Concurrency** | 10k+ Req/s | ARM instances offer better vertical scaling for Go's M:N scheduler. |
+| **Cost** | $0/mo | Optimized to stay within OCI "Always Free" (4 OCPU / 24GB RAM). |
+| **Memory Efficiency** | 24GB Cap | Ample RAM for high-speed Inverted Index and Crawler Frontier. |
+
+---
+
+## 🛠️ Internal Package Structure
 
 ```
-╔══════════════════════════════════════════════════════════════════════════╗
-║                          EVOLUTION ROADMAP                              ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║                                                                          ║
-║  PHASE 1 (CURRENT) — Meta Search Engine                                 ║
-║  ├── External API aggregation (DDG + Wikipedia + GitHub)                ║
-║  ├── Concurrent fan-out with goroutines                                 ║
-║  ├── URL deduplication + keyword-weighted ranking                       ║
-║  └── Clean provider interface for extensibility                         ║
-║                                                                          ║
-║  PHASE 2 — Focused Web Crawler                                          ║
-║  ├── URL frontier (priority queue)                                      ║
-║  ├── robots.txt compliance                                              ║
-║  ├── Politeness delays + rate limiting                                  ║
-║  ├── Raw page storage (disk / blob storage)                             ║
-║  └── Feeds into indexing pipeline                                       ║
-║                                                                          ║
-║  PHASE 3 — Inverted Index + BM25 Ranking                                ║
-║  ├── Tokenization & normalization pipeline                              ║
-║  ├── Term frequency / document frequency tracking                       ║
-║  ├── Positional index for phrase queries                                ║
-║  ├── BM25 scoring (k1=1.2, b=0.75)                                     ║
-║  └── Optional: Elasticsearch / Bleve integration                       ║
-║                                                                          ║
-║  PHASE 4 — AI Semantic Search                                           ║
-║  ├── Sentence embeddings (via ONNX Runtime / external API)              ║
-║  ├── Vector index (HNSW / FAISS)                                        ║
-║  ├── Cosine similarity re-ranking                                       ║
-║  └── Hybrid lexical + semantic scoring                                  ║
-║                                                                          ║
-╚══════════════════════════════════════════════════════════════════════════╝
+backend/
+├── cmd/server/main.go          ← Entry point
+├── internal/
+│   ├── api/                    ← HTTP Handlers & Middleware
+│   ├── hybrid/                 ← Hybrid Search Logic (The "Brain")
+│   ├── provider/               ← External Meta-Search Providers
+│   ├── crawler/                ← URL Frontier & Scraping Logic
+│   ├── index/                  ← Meilisearch/Bleve local indexing
+│   ├── ranking/                ← Advanced Scoring (BM25, PR)
+│   ├── models/                 ← Domain DTOs
+│   └── cache/                  ← Redis integration
 ```
 
-## 🚀 How to Run
+## 🚀 Future: Semantic Vector Search
 
-### Backend (Go)
-
-```bash
-cd backend
-
-# Copy and configure environment
-cp .env.example .env
-
-# Build
-go build -o bin/kshanik-search.exe ./cmd/server/
-
-# Run
-./bin/kshanik-search.exe
-
-# Or simply:
-go run ./cmd/server/
-```
-
-The server starts at `http://localhost:8080`.
-
-### Frontend (React + Vite)
-
-```bash
-# In the project root
-npm install
-npm run dev
-```
-
-The frontend runs at `http://localhost:3000` and proxies `/api/*` to the Go backend.
-
-### Test the API directly
-
-```bash
-curl "http://localhost:8080/search?q=golang"
-curl "http://localhost:8080/health"
-```
-
-## ⚡ Concurrency Benefits vs Java Spring Boot
-
-| Aspect | Go (this project) | Java Spring Boot |
-|--------|-------------------|------------------|
-| **Goroutines** | Extremely lightweight (~2KB stack). We spin up one per provider with zero overhead. | Threads are expensive (~1MB stack). Requires thread pools, `@Async`, or reactive `WebFlux`. |
-| **Fan-out pattern** | Native: `go func()` + `sync.WaitGroup` + channels. 5 lines of code. | Requires `CompletableFuture.supplyAsync()` or `Mono.zip()` with reactor. Significant boilerplate. |
-| **Memory** | The entire binary is ~10MB. A search query uses ~100KB. | JVM baseline is 200-500MB. Spring context adds another 100MB+. |
-| **Startup time** | ~50ms cold start. | 5-15 seconds for Spring Boot context initialization. |
-| **Context propagation** | `context.Context` is first-class — flows through every function. Timeouts and cancellation propagate automatically. | `RequestScope`, `ThreadLocal`, or reactive `Context` — error-prone across thread boundaries. |
-| **Error handling** | Explicit `(result, error)` tuples. No hidden exceptions. Every failure path is visible. | Exception-based — easy to miss unchecked exceptions. `@ControllerAdvice` adds indirection. |
-| **Deployment** | Single static binary. No runtime dependencies. `COPY binary → docker`. | Needs JRE/JDK, fat JAR or layered image. Docker images are 200MB+. |
-| **HTTP server** | Built into stdlib (`net/http`). Zero dependencies for a production-grade server. | Embedded Tomcat/Netty with dozens of transitive dependencies. |
-
-### Why goroutines shine for meta-search
-
-In meta-search, every query triggers N parallel API calls. With goroutines:
-
-```go
-// This is the ENTIRE concurrency code:
-for _, p := range providers {
-    wg.Add(1)
-    go func(p SearchProvider) {
-        defer wg.Done()
-        results, err := p.Search(ctx, query)
-        ch <- providerResult{results, p.Name(), err}
-    }(p)
-}
-```
-
-- **No thread pool tuning** — the Go scheduler handles 100K+ goroutines.
-- **No callback hell** — goroutines block naturally.
-- **Context cancellation** — if the client disconnects, all provider calls are cancelled automatically.
-- **Partial failure tolerance** — we collect whatever succeeds and serve partial results.
-
-## 🔧 Configuration
-
-| Environment Variable | Default | Description |
-|---------------------|---------|-------------|
-| `PORT` | `8080` | HTTP server port |
-| `PROVIDER_TIMEOUT_MS` | `5000` | Timeout per provider API call |
-| `SEARCH_TIMEOUT_MS` | `10000` | Timeout for entire search operation |
-| `GITHUB_TOKEN` | _(empty)_ | GitHub API token for higher rate limits |
-
-## 📡 API Reference
-
-### `GET /search?q={query}`
-
-Returns aggregated, deduplicated, ranked search results.
-
-**Response:**
-```json
-{
-  "results": [
-    {
-      "title": "Go (programming language)",
-      "snippet": "Go is a statically typed, compiled...",
-      "url": "https://en.wikipedia.org/wiki/Go_(programming_language)",
-      "source": "wikipedia",
-      "score": 0.85,
-      "timestamp": "2026-02-22T19:30:00Z"
-    }
-  ],
-  "total_count": 15,
-  "query": "golang",
-  "time_taken": "1.234s"
-}
-```
-
-### `GET /health`
-
-```json
-{
-  "status": "healthy",
-  "engine": "kshanik-meta-search"
-}
-```
-
-## 🧩 Adding a New Provider
-
-1. Create a new file in `internal/provider/` (e.g., `brave.go`).
-2. Implement the `SearchProvider` interface:
-
-```go
-type BraveProvider struct { ... }
-
-func (b *BraveProvider) Name() string { return "brave" }
-func (b *BraveProvider) Search(ctx context.Context, query string) ([]models.SearchResult, error) {
-    // Your implementation
-}
-```
-
-3. Register it in `cmd/server/main.go`:
-
-```go
-providers := []provider.SearchProvider{
-    provider.NewDuckDuckGoProvider(providerTimeout),
-    provider.NewWikipediaProvider(providerTimeout),
-    provider.NewGitHubProvider(providerTimeout, githubToken),
-    provider.NewBraveProvider(providerTimeout, braveAPIKey), // ← Add here
-}
-```
-
-4. Optionally add a weight in `utils/helpers.go`:
-
-```go
-var ProviderWeights = map[string]float64{
-    "brave": 0.85,
-}
-```
-
-That's it. No other code changes needed.
+The architecture is designed to integrate **Milvus** or **Pinecone** for vector-based semantic search, allowing users to find "stories that define history" not just by keywords, but by meaning.
