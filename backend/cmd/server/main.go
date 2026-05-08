@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"syscall"
 	"time"
@@ -38,11 +39,26 @@ func main() {
 	searchTimeout := getEnvDuration("SEARCH_TIMEOUT_MS", 10000)
 	githubToken := os.Getenv("GITHUB_TOKEN") // Optional: increases GitHub API rate limit.
 
+	// Memory limits for 1GB RAM optimization.
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		for range ticker.C {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			logger.Info().
+				Uint64("alloc_mb", m.Alloc/1024/1024).
+				Uint64("sys_mb", m.Sys/1024/1024).
+				Uint32("num_gc", m.NumGC).
+				Msg("memory stats")
+		}
+	}()
+
 	logger.Info().
 		Str("port", port).
 		Dur("provider_timeout", providerTimeout).
 		Dur("search_timeout", searchTimeout).
 		Bool("github_auth", githubToken != "").
+		Str("go_version", runtime.Version()).
 		Msg("configuration loaded")
 
 	// --- Initialize search providers ---
