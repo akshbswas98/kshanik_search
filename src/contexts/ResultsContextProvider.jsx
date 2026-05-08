@@ -13,7 +13,13 @@ export const ResultContextProvider = ({ children }) => {
             const params = new URLSearchParams({ q: query });
             const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
             const endpoint = API_BASE ? `${API_BASE}/search?${params.toString()}` : `/api/search?${params.toString()}`;
-            const response = await fetch(endpoint);
+            
+            // Added ngrok-skip-browser-warning header to support local forwarding via ngrok free tier
+            const response = await fetch(endpoint, {
+                headers: {
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
