@@ -22,7 +22,14 @@ export const Results = () => {
 
             try {
                 const params = new URLSearchParams({ q: searchTerm });
-                const response = await fetch(`/api/search?${params.toString()}`);
+                const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
+                const endpoint = API_BASE ? `${API_BASE}/search?${params.toString()}` : `/api/search?${params.toString()}`;
+                
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
