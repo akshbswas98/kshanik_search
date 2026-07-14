@@ -36,3 +36,18 @@ Get started with Kshanik Search in just a few steps:
 
 ## Deployment
 This project is deployed on Netlify. Visit [Kshanik Search](https://kshaniksearch.netlify.app) to explore.
+
+
+## Netlify + Go backend integration (fix for blank results)
+
+This frontend is static and cannot run the Go API inside Netlify directly. To show results correctly:
+
+1. Deploy the Go backend (`cmd/server`) to a backend host (Render/Fly.io/Railway/etc).
+2. Set a Netlify redirect so `/api/*` points to your Go service.
+3. Set frontend env var `VITE_SEARCH_API_BASE_URL`:
+   - `/api` (recommended with Netlify redirect), or
+   - direct backend URL (for local debugging).
+4. Ensure CORS is enabled on the Go API if you use a direct URL instead of `/api`.
+
+The app now fetches from `GET /search?q=` and expects normalized JSON array objects:
+`title`, `snippet`, `url`, `source`, `score`, `timestamp`.

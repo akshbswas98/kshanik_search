@@ -8,9 +8,8 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8081',
+        target: process.env.VITE_SEARCH_API_PROXY_TARGET || 'http://localhost:8081',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },

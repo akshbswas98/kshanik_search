@@ -4,12 +4,14 @@ import { useLocation } from 'react-router-dom';
 export const Results = () => {
     const location = useLocation();
     const [results, setResults] = useState([]);
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [timeTaken, setTimeTaken] = useState('');
     const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchResults = async () => {
             const searchTerm = new URLSearchParams(location.search).get('q');
             if (!searchTerm) {
@@ -25,7 +27,7 @@ export const Results = () => {
                 const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
                 const endpoint = API_BASE ? `${API_BASE}/search?${params.toString()}` : `/api/search?${params.toString()}`;
                 
-                const response = await fetch(endpoint);
+                const response = await fetch(endpoint, { signal: controller.signal });
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
@@ -40,17 +42,24 @@ export const Results = () => {
                     setTotalCount(data.total_count || 0);
                 } else {
                     setResults([]);
+                    setTimeTaken('');
+                    setTotalCount(0);
                 }
             } catch (err) {
+                if (err.name === 'AbortError') {
+                    return;
+                }
                 console.error('Error fetching search results:', err);
                 setError('Failed to fetch search results. Please try again later.');
+                setResults([]);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchResults();
-    }, [location]);
+        return () => controller.abort();
+    }, [location.search]);
 
     if (loading) {
         return (
