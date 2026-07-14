@@ -25,11 +25,7 @@ export const Results = () => {
                 const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
                 const endpoint = API_BASE ? `${API_BASE}/search?${params.toString()}` : `/api/search?${params.toString()}`;
                 
-                const response = await fetch(endpoint, {
-                    headers: {
-                        'ngrok-skip-browser-warning': 'true'
-                    }
-                });
+                const response = await fetch(endpoint);
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
@@ -82,7 +78,7 @@ export const Results = () => {
                 <div className="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4 flex justify-between items-end">
                     <div>
                         <h2 className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">Search Results for</h2>
-                        <p className="text-2xl font-serif font-bold text-slate-900 dark:text-white">"{searchTerm}"</p>
+                        <p className="text-2xl font-serif font-bold text-slate-900 dark:text-white">{`"${searchTerm}"`}</p>
                     </div>
                     {totalCount > 0 && (
                         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium italic">
@@ -142,7 +138,7 @@ export const Results = () => {
                 ) : searchTerm ? (
                     <div className="text-center py-24 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
                         <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600 mb-4 italic">find_in_page</span>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium">No historical records found for "{searchTerm}".</p>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">No historical records found for {`"${searchTerm}"`}.</p>
                         <p className="text-xs text-slate-400 mt-2 italic">Try refining your search terms or exploring the archives.</p>
                     </div>
                 ) : null}

@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -27,9 +27,6 @@ WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/kshanik-search .
-
-# Copy environment example (user will provide .env via volume or env_file)
-COPY .env.example .env
 
 # Expose port
 EXPOSE 8080

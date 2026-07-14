@@ -43,7 +43,7 @@ func TestHandler_HandleSearch(t *testing.T) {
 			},
 		}
 		searchService := service.NewMetaSearchService(providers, time.Second, logger)
-		handler := NewHandler(searchService, logger)
+		handler := NewHandler(searchService, logger, LoadSecurityConfig())
 
 		req, err := http.NewRequest(http.MethodGet, "/search?q=golang", nil)
 		if err != nil {
@@ -73,7 +73,7 @@ func TestHandler_HandleSearch(t *testing.T) {
 
 	t.Run("Missing query parameter", func(t *testing.T) {
 		searchService := service.NewMetaSearchService([]provider.SearchProvider{}, time.Second, logger)
-		handler := NewHandler(searchService, logger)
+		handler := NewHandler(searchService, logger, LoadSecurityConfig())
 
 		req, err := http.NewRequest(http.MethodGet, "/search", nil) // no ?q=...
 		if err != nil {
@@ -90,7 +90,7 @@ func TestHandler_HandleSearch(t *testing.T) {
 
 	t.Run("Method Not Allowed (POST instead of GET)", func(t *testing.T) {
 		searchService := service.NewMetaSearchService([]provider.SearchProvider{}, time.Second, logger)
-		handler := NewHandler(searchService, logger)
+		handler := NewHandler(searchService, logger, LoadSecurityConfig())
 
 		req, err := http.NewRequest(http.MethodPost, "/search?q=test", nil)
 		if err != nil {
@@ -105,35 +105,12 @@ func TestHandler_HandleSearch(t *testing.T) {
 		}
 	})
 
-	t.Run("OPTIONS handling (CORS Preflight)", func(t *testing.T) {
-		searchService := service.NewMetaSearchService([]provider.SearchProvider{}, time.Second, logger)
-		handler := NewHandler(searchService, logger)
-
-		req, err := http.NewRequest(http.MethodOptions, "/search?q=test", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		rr := httptest.NewRecorder()
-		handler.handleSearch(rr, req)
-
-		if status := rr.Code; status != http.StatusOK {
-			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-		}
-
-		corsHeaders := []string{"Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers"}
-		for _, h := range corsHeaders {
-			if rr.Header().Get(h) == "" {
-				t.Errorf("Expected CORS header %s to be set", h)
-			}
-		}
-	})
 }
 
 func TestHandler_HandleHealth(t *testing.T) {
 	logger := zerolog.Nop()
 	searchService := service.NewMetaSearchService([]provider.SearchProvider{}, time.Second, logger)
-	handler := NewHandler(searchService, logger)
+	handler := NewHandler(searchService, logger, LoadSecurityConfig())
 
 	req, err := http.NewRequest(http.MethodGet, "/health", nil)
 	if err != nil {

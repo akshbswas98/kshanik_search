@@ -33,3 +33,12 @@ backend/tmp/
 *.dll
 *.so
 *.dylib
+
+# Local Netlify folder
+.netlify
+
+# Local development caches & log files
+.vite_new/
+*.log
+.env.development
+

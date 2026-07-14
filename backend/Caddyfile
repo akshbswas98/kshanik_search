@@ -1,10 +1,8 @@
 {
-    # Global options
-    email your-email@example.com
+    email {$ACME_EMAIL}
 }
 
-# Replace 'api.yourdomain.com' with your actual domain or subdomain
-api.yourdomain.com {
+{$API_DOMAIN} {
     # Proxy all requests to the Go backend container
     reverse_proxy backend:8080
 
@@ -15,11 +13,8 @@ api.yourdomain.com {
     header {
         # Enable HSTS
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        # Disable FLoC
         Permissions-Policy "interest-cohort=()"
-        # Prevent Clickjacking
         X-Frame-Options "DENY"
-        # Prevent MIME-sniffing
         X-Content-Type-Options "nosniff"
     }
 

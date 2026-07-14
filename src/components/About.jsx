@@ -32,7 +32,7 @@ export const About = () => {
                     </div>
                     {/* Divider Ornament */}
                     <div className="flex justify-center mt-12 opacity-30 dark:opacity-50">
-                        <svg fill="none" height="24" viewbox="0 0 200 24" width="200" xmlns="http://www.w3.org/2000/svg">
+                        <svg fill="none" height="24" viewBox="0 0 200 24" width="200" xmlns="http://www.w3.org/2000/svg">
                             <path d="M0 12H90M200 12H110M95 12C95 9.23858 97.2386 7 100 7C102.761 7 105 9.23858 105 12C105 14.7614 102.761 17 100 17C97.2386 17 95 14.7614 95 12Z" stroke="currentColor" strokeWidth="1.5"></path>
                         </svg>
                     </div>
@@ -49,7 +49,7 @@ export const About = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all">
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-3">Legacy in Code</h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">Honoring Kshanik Kumar Biswas's values through a robust, reliable search tool that embodies trust and clarity.</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{"Honoring Kshanik Kumar Biswas's values through a robust, reliable search tool that embodies trust and clarity."}</p>
                         </div>
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all">
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-3">Information Access</h3>

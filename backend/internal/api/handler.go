@@ -15,13 +15,15 @@ import (
 type Handler struct {
 	searchService *service.MetaSearchService
 	logger        zerolog.Logger
+	security      SecurityConfig
 }
 
 // NewHandler creates a new Handler with the given search service.
-func NewHandler(searchService *service.MetaSearchService, logger zerolog.Logger) *Handler {
+func NewHandler(searchService *service.MetaSearchService, logger zerolog.Logger, security SecurityConfig) *Handler {
 	return &Handler{
 		searchService: searchService,
 		logger:        logger.With().Str("component", "api_handler").Logger(),
+		security:      security,
 	}
 }
 
@@ -33,16 +35,6 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 // handleSearch processes GET /search?q=query
 func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
-	// CORS headers for frontend communication.
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
 	if r.Method != http.MethodGet {
 		h.writeError(w, http.StatusMethodNotAllowed, "only GET method is allowed")
 		return
@@ -53,13 +45,21 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		h.writeError(w, http.StatusBadRequest, "query parameter 'q' is required")
 		return
 	}
+	if len(query) > h.security.MaxQueryLength {
+		h.writeError(w, http.StatusBadRequest, "query is too long")
+		return
+	}
 
 	h.logger.Info().Str("query", query).Str("remote", r.RemoteAddr).Msg("search request received")
 
 	result, err := h.searchService.Search(r.Context(), query)
 	if err != nil {
 		h.logger.Error().Err(err).Str("query", query).Msg("search failed")
-		h.writeError(w, http.StatusInternalServerError, "search failed: "+err.Error())
+		msg := "search failed"
+		if h.security.ExposeErrorDetail {
+			msg = "search failed: " + err.Error()
+		}
+		h.writeError(w, http.StatusInternalServerError, msg)
 		return
 	}
 
@@ -68,7 +68,6 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 // handleHealth returns the server health status.
 func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	h.writeJSON(w, http.StatusOK, map[string]string{
 		"status": "healthy",
 		"engine": "kshanik-meta-search",

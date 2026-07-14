@@ -7,8 +7,8 @@ services:
     restart: always
     env_file:
       - .env
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
       interval: 30s
@@ -21,6 +21,8 @@ services:
     image: caddy:latest
     container_name: kshanik-proxy
     restart: always
+    env_file:
+      - .env
     ports:
       - "80:80"
       - "443:443"

@@ -1,0 +1,36 @@
+# Fly.io deployment — https://fly.io/docs/reference/configuration/
+# Deploy from backend/: fly launch (once) then fly deploy
+
+app = 'kshanik-search-api'
+primary_region = 'bom'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  PORT = '8080'
+  ENV = 'production'
+  PROVIDER_TIMEOUT_MS = '5000'
+  SEARCH_TIMEOUT_MS = '10000'
+  RATE_LIMIT_PER_MINUTE = '60'
+  MAX_QUERY_LENGTH = '200'
+  EXPOSE_ERROR_DETAIL = 'false'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = '15s'
+    interval = '30s'
+    method = 'GET'
+    path = '/health'
+    timeout = '5s'
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1

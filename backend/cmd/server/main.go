@@ -27,7 +27,14 @@ import (
 
 func main() {
 	// --- Logger setup ---
-	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}).
+	// consoleWriter for pretty terminal output
+	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	
+	// fileWriter for persistent JSON logs (searchable history)
+	logFile, _ := os.OpenFile("access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	multi := zerolog.MultiLevelWriter(consoleWriter, logFile)
+
+	logger := zerolog.New(multi).
 		With().
 		Timestamp().
 		Str("app", "kshanik-search").
@@ -75,22 +82,37 @@ func main() {
 	// --- Create the meta-search service ---
 	searchService := service.NewMetaSearchService(providers, searchTimeout, logger)
 
+	// --- Security configuration ---
+	securityCfg := api.LoadSecurityConfig()
+	if isProductionEnv() && len(securityCfg.AllowedOrigins) == 0 {
+		logger.Warn().Msg("ENV=production but ALLOWED_ORIGINS is empty; browser requests from Netlify will be blocked")
+	}
+
 	// --- Set up HTTP server ---
 	mux := http.NewServeMux()
 
-	handler := api.NewHandler(searchService, logger)
+	handler := api.NewHandler(searchService, logger, securityCfg)
 	handler.RegisterRoutes(mux)
 
-	// Apply middleware chain: Recovery → Logging → Handler.
+	// Middleware (outer → inner): Recovery → Logging → RateLimit → SecurityHeaders → CORS → routes
 	var httpHandler http.Handler = mux
+	httpHandler = api.CORSMiddleware(securityCfg.AllowedOrigins)(httpHandler)
+	httpHandler = api.SecurityHeadersMiddleware()(httpHandler)
+	httpHandler = api.RateLimitMiddleware(securityCfg.RatePerMinute)(httpHandler)
 	httpHandler = api.LoggingMiddleware(logger)(httpHandler)
 	httpHandler = api.RecoveryMiddleware(logger)(httpHandler)
+
+	writeTimeout := searchTimeout + 5*time.Second
+	if writeTimeout < 20*time.Second {
+		writeTimeout = 20 * time.Second
+	}
 
 	server := &http.Server{
 		Addr:         ":" + port,
 		Handler:      httpHandler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
+		WriteTimeout: writeTimeout,
 		IdleTimeout:  60 * time.Second,
 	}
 
@@ -119,6 +141,10 @@ func main() {
 }
 
 // getEnv reads an environment variable with a fallback default.
+func isProductionEnv() bool {
+	return getEnv("ENV", "") == "production"
+}
+
 func getEnv(key, fallback string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
